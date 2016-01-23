@@ -1,4 +1,4 @@
-desc.package
+aws.package
 #IDEs
 .DS_Store
 .idea/*
