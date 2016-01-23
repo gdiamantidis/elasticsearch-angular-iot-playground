@@ -1,0 +1,14 @@
+#IDEs
+.DS_Store
+.idea/*
+**/.idea/
+*.ipr
+*.iml
+*.iws
+output/
+
+#Maven
+target/
+#Tests
+*.db
+test.log

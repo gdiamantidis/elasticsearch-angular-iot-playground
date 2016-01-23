@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Elasticsearch + Angular Example</title>
+  <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
+</head>
+<!-- boot angular with the ExampleApp module -->
+<body ng-app="ExampleApp">
+  <!-- attach the ExampleController to our main content -->
+  <div ng-controller="ExampleController" class="container">
+    <h1>Angular + Elasticsearch</h1>
+
+    <!-- if there is an error, display its message -->
+    <div ng-if="error" class="alert alert-danger" role="alert">{{error.message}}</div>
+
+    <!-- if clusterState is available, display it as formatted json -->
+    <div ng-if="clusterState" class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Cluster State</h3>
+      </div>
+      <div class="panel-body">
+        <pre>{{clusterState | json}}</pre>
+      </div>
+    </div>
+
+
+<!--
+    <div ng-if="metrics" class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Metrics</h3>
+      </div>
+      <div class="panel-body">
+        <pre>{{metrics | json}}</pre>
+      </div>
+    </div>
+-->
+    <div ng-if="error" class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Metrics</h3>
+      </div>
+      <div class="panel-body">
+        <pre>{{error.message}}</pre>
+      </div>
+    </div>
+
+  <div>
+    <flot dataset="dataset" options="options" height="480px"></flot>
+    <div id="legend" style="width: 200px; height: 200px;"></div>
+  </div>
+
+  <div>
+    <pre>{{noOfPoints}}</pre>
+  </div>
+  
+  
+  </div>
+
+  <!-- include bower components in proper order -->
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/moment/moment.js"></script>
+  <script src="bower_components/elasticsearch/elasticsearch.angular.js"></script>
+  
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.resize.min.js"></script>
+<script src="bower_components/angular-flot/angular-flot.js"></script>
+  <!-- app code starts is here -->
+  <script>
+    // App module
+    //
+    // The app module will contain all of the components the app needs (directives,
+    // controllers, services, etc.). Since it will be using the components within
+    // the elasticsearch module, define it a dependency.
+    var ExampleApp = angular.module('ExampleApp', ['elasticsearch', 'angular-flot']);
+
+    // Service
+    //
+    // esFactory() creates a configured client instance. Turn that instance
+    // into a service so that it can be required by other parts of the application
+    ExampleApp.service('client', function (esFactory) {
+      return esFactory({
+        host: 'localhost:9200',
+        apiVersion: '1.2',
+        log: 'trace'
+      });
+    });
+
+    // Controller
+    //
+    // It requires the "client" service, and fetches information about the server,
+    // it adds either an error or info about the server to $scope.
+    //
+    // It also requires the esFactory to that it can check for a specific type of
+    // error which might come back from the client
+    ExampleApp.controller('ExampleController', function ($scope, client, esFactory) {
+      $scope.noOfPoints = 0;
+      var data1 = [],
+          data2 = [],
+          data3 = [],
+          data4 = [],
+          data5 = [],
+          data6 = [];
+      $scope.dataset = [
+        { data: data1, yaxis: 1, color: "#FF0000",label: "PrimT"},
+        { data: data2, yaxis: 1, color: "#0062E3",label: "HwFlow"},
+        { data: data3, yaxis: 1, color: "#FF62E3",label: "HwTOutlet"},
+        { data: data4, yaxis: 1, color: "#FFF2E3",label: "HwTSet"},
+        { data: data5, yaxis: 1, color: "#0062FF",label: "PrimTSet"},
+        { data: data6, yaxis: 1, color: "#00FFE3",label: "ActPow"}
+      ];
+      $scope.options = {
+         legend: {
+           container: "#legend",
+           show: true
+         }
+      };
+
+      client.search({
+        index: 'metrics',
+        type: ["status"],
+        body: {
+          query:{term: {"clipinId": "::20d:6f00:ab7:b379"}},  
+          sort: [{
+              timestamp: {
+                order: "asc"
+              }
+            }],
+          size: "800"
+        }
+      }).then(function (resp) {
+
+        var timeseries = [], 
+          theData;
+
+        resp.hits.hits.forEach(function(hit){
+          $scope.noOfPoints = $scope.noOfPoints +1;
+          
+          if (hit._source.name === 'PrimT') {
+            theData = data1;
+          } else if (hit._source.name === 'HwFlow') {
+            theData = data2;
+          }else if (hit._source.name === 'HwTOutlet') {
+            theData = data3;
+          }else if (hit._source.name === 'HwTSet') {
+            theData = data4;
+          }else if (hit._source.name === 'PrimTSet') {
+            theData = data5;
+          }else if (hit._source.name === 'ActPow') {
+            theData = data6;
+          }
+
+          theData.push([
+              moment(hit._source.timestamp).valueOf(), 
+              hit._source.metricValue]);  
+          
+        }); 
+        $scope.error = null;
+      })
+      .catch(function (err) {
+        $scope.metrics = null;
+        $scope.error = err;
+
+        // if the err is a NoConnections error, then the client was not able to
+        // connect to elasticsearch. In that case, create a more detailed error
+        // message
+        if (err instanceof esFactory.errors.NoConnections) {
+          $scope.error = new Error('Unable to connect to elasticsearch. ' +
+            'Make sure that it is running and listening at http://localhost:9200');
+        }
+      });
+
+    });
+  </script>
+</body>
+</html>
