@@ -6,14 +6,16 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.TypeQueryBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.InternalAggregations;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.InternalHistogram;
 import org.joda.time.DateTime;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
@@ -61,7 +63,7 @@ public class HistogramResource {
             start = LocalDateTime.now();
 
             for (String f : field) {
-                histo.put(f, subAgg((InternalHistogram) ((InternalFilter) searchResponse.getAggregations().getAsMap().get(f)).getAggregations().getAsMap().get("messagesPer1W")));
+                histo.put(f, subAgg((InternalHistogram) ((InternalFilter) searchResponse.getAggregations().getAsMap().get(f)).getAggregations().getAsMap().get("messagesPer" + interval)));
             }
 
             System.out.println(">>> Transformation Took: " + ChronoUnit.MILLIS.between(start, LocalDateTime.now()));
@@ -75,12 +77,14 @@ public class HistogramResource {
 
     public List<List<Number>> subAgg(InternalHistogram internalAggregations) {
         ArrayList<List<Number>> lists = new ArrayList<>();
-        List<Histogram.Bucket> buckets = internalAggregations.getBuckets();
-        for (Histogram.Bucket bucket : buckets) {
-            ArrayList<Number> pair = new ArrayList<>();
-            pair.add(((DateTime) bucket.getKey()).getMillis());
-            pair.add(bucket.getDocCount());
-            lists.add(pair);
+        if (internalAggregations != null) {
+            List<Histogram.Bucket> buckets = internalAggregations.getBuckets();
+            for (Histogram.Bucket bucket : buckets) {
+                ArrayList<Number> pair = new ArrayList<>();
+                pair.add(((DateTime) bucket.getKey()).getMillis());
+                pair.add(bucket.getDocCount());
+                lists.add(pair);
+            }
         }
 
         return lists;

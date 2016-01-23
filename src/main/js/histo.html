@@ -33,6 +33,7 @@
   <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.resize.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.time.min.js"></script>
 <script src="bower_components/angular-flot/angular-flot.js"></script>
   <!-- app code starts is here -->
   <script>
@@ -68,9 +69,6 @@
          legend: {
            container: "#cb-data",
            show: true
-         },
-         bars: {
-            show: true
          }
       };
 
@@ -81,7 +79,7 @@
       
       $http({
         method: 'GET',
-        url: 'http://localhost:9090/histo?types=metric,warning&interval=1W',
+        url: 'http://localhost:9090/histo?types=metric,warning&interval=1M',
       }).then(function (resp) {
         var stop  = new Date();
         console.log('Got response at '+ stop +'. Took ' + (stop.getTime() - start.getTime())/1000);
@@ -89,8 +87,8 @@
         $scope.error = null;        
    
         $scope.dataset = [
-          { data: resp.data.metric, yaxis: 100,color: "#FF0000",label: "weekly metrics"},
-          { data: resp.data.warning, yaxis: 1,color: "#FF62E3",label: "weekly warnings"}
+          { data: resp.data.metric,  bars: {show: true, align: "center", barWidth: 5},color: "orange",label: "weekly metrics"},
+          { data: resp.data.warning, bars: {show: true, align: "center", barWidth: 5},color: "blue",label: "weekly warnings"}
         ];
         
         }).catch(function (err) {
