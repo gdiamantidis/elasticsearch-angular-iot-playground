@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Elasticsearch + Angular Example</title>
+  <title>Clipin graph data</title>
   <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
 </head>
 <!-- boot angular with the ExampleApp module -->
 <body ng-app="ExampleApp">
   <!-- attach the ExampleController to our main content -->
   <div ng-controller="ExampleController" class="container">
-    <h1>Angular + Elasticsearch</h1>
+    <h1>Clipin graph data</h1>
 
     <!-- if there is an error, display its message -->
     <div ng-show="error" class="alert alert-danger" role="alert">{{error.message}}</div>
@@ -33,7 +33,9 @@
   <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.resize.min.js"></script>
-<script src="bower_components/angular-flot/angular-flot.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.navigate.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.time.min.js"></script>
+    <script src="bower_components/angular-flot/angular-flot.js"></script>
   <!-- app code starts is here -->
   <script>
     // App module
@@ -68,12 +70,23 @@
          legend: {
            container: "#cb-data",
            show: true
+         },
+		 zoom: {
+			interactive: true
+		 },
+		 pan: {
+			interactive: true
+		 },
+		 xaxis:{
+            mode: "time",
+            timeformat: "%m/%d/%y",
+            minTickSize: [1, "day"]
          }
       };
 
       console.log('sending request')
 
-      var days = 60;
+      var days = 5;
       var pointsPerDay = 8000;
 
       var start = new Date();

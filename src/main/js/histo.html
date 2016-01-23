@@ -1,28 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Elasticsearch + Angular Example</title>
+  <title>Histogram of metrics, warnings, and faults</title>
   <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
 </head>
-<!-- boot angular with the ExampleApp module -->
 <body ng-app="ExampleApp">
-  <!-- attach the ExampleController to our main content -->
   <div ng-controller="ExampleController" class="container">
-    <h1>Angular + Elasticsearch</h1>
+    <h1>Histogram of metrics, warnings, and faults</h1>
 
-    <!-- if there is an error, display its message -->
     <div ng-show="error" class="alert alert-danger" role="alert">{{error.message}}</div>
 
     <div>
       <flot dataset="dataset" options="options" height="480px"></flot>
       <div id="cb-data" style="width: 200px; height: 200px;"></div>
     </div>  
-
-    <div ng-if="noOfPoints">
-        <span>{{noOfPoints}}</span>
-    </div>  
-    
-
   </div>
 
   <!-- include bower components in proper order -->
@@ -34,7 +25,10 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.resize.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.time.min.js"></script>
-<script src="bower_components/angular-flot/angular-flot.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.time.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.stack.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/flot/0.8.2/jquery.flot.errorbars.min.js"></script>
+    <script src="bower_components/angular-flot/angular-flot.js"></script>
   <!-- app code starts is here -->
   <script>
     // App module
@@ -66,29 +60,47 @@
     ExampleApp.controller('ExampleController', function ($scope, client, esFactory, $http, $q) {
       $scope.error = null;
       $scope.options = {
-         legend: {
-           container: "#cb-data",
-           show: true
-         }
+         //legend: {
+         //  container: "#cb-data",
+         //  show: true
+         //},
+		 xaxis:{
+            mode: "time",
+            timeformat: "%m/%d/%y",
+            minTickSize: [5, "day"],
+         },
+         series: {
+            stack: true,
+            lines: {
+                show: false,
+                fill: true,
+                steps: false
+            },
+            bars: {
+                show: true,
+                align: "center",
+                barWidth: 86400000 * 10
+            }
+          }
       };
 
-      console.log('sending request')
       var start = new Date();
-      
       console.log('Request sent at ' + start);
       
       $http({
         method: 'GET',
-        url: 'http://localhost:9090/histo?types=metric,warning&interval=1M',
+        url: 'http://localhost:9090/histo?types=metric,warning,fault&interval=1M',
       }).then(function (resp) {
         var stop  = new Date();
         console.log('Got response at '+ stop +'. Took ' + (stop.getTime() - start.getTime())/1000);
-        
-        $scope.error = null;        
-   
+
+        $scope.error = null;
+
+   <!--  bars: {show: true, align: "center", barWidth: 5}-->
         $scope.dataset = [
-          { data: resp.data.metric,  bars: {show: true, align: "center", barWidth: 5},color: "orange",label: "weekly metrics"},
-          { data: resp.data.warning, bars: {show: true, align: "center", barWidth: 5},color: "blue",label: "weekly warnings"}
+          { data: resp.data.metric, color: "orange",label: "weekly metrics"},
+          { data: resp.data.warning, color: "blue",label: "weekly warnings"},
+          { data: resp.data.warning, color: "green",label: "weekly faults"}
         ];
         
         }).catch(function (err) {
