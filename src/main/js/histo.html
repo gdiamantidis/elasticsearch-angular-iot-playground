@@ -102,10 +102,15 @@
 
         $scope.error = null;
 
+        var labelPrefix = {
+            "1W": "weekly ",
+            "1M": "monthly "
+        };
+
         $scope.dataset = [
-          { data: resp.data.metric, color: "orange",label: "weekly metrics"},
-          { data: resp.data.warning, color: "blue",label: "weekly warnings"},
-          { data: resp.data.warning, color: "green",label: "weekly faults"}
+          { data: resp.data.metric, color: "orange",label: labelPrefix[i] + "metrics"},
+          { data: resp.data.warning, color: "blue",label: labelPrefix[i] + "warnings"},
+          { data: resp.data.fault, color: "green",label:labelPrefix[i] + "faults"}
         ];
         
         }).catch(function (err) {
