@@ -61,6 +61,9 @@
     // It also requires the esFactory to that it can check for a specific type of
     // error which might come back from the client
     ExampleApp.controller('ExampleController', function ($scope, client, esFactory, $http, $q, $location) {
+      var t = $location.search()['t'],
+          i = $location.search()['i'],
+
       $scope.error = null;
       $scope.options = {
          //legend: {
@@ -69,7 +72,7 @@
          //},
 		 xaxis:{
             mode: "time",
-            timeformat: "%m/%d/%y",
+            timeformat: "%d/%m/%y",
             minTickSize: [1, "day"],
          },
          series: {
@@ -87,8 +90,6 @@
           }
       };
 
-      var t = $location.search()['t'],
-          i = $location.search()['i'],
           start = new Date();
 
       console.log('Request sent at ' + start);
@@ -104,7 +105,8 @@
 
         var labelPrefix = {
             "1W": "weekly ",
-            "1M": "monthly "
+            "1M": "monthly ",
+            "1D": "daily "
         };
 
         $scope.dataset = [

@@ -11,6 +11,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramBuild
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.InternalHistogram;
+import org.elasticsearch.search.sort.SortOrder;
 import org.joda.time.DateTime;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.elasticsearch.search.sort.SortOrder.ASC;
 
 
 // /usr/local/elasticsearch/bin/elasticsearch --path.data=/Users/gdiama/Desktop/elasticsearch-data/data
@@ -50,6 +53,7 @@ public class HistogramResource {
         try {
             SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client, SearchAction.INSTANCE)
                     .setIndices("all_data")
+                    .addSort("received", ASC)
                     .setSize(0);
 
             String[] field = types.split(",");
