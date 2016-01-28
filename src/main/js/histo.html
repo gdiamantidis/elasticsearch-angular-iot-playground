@@ -62,7 +62,7 @@
     // error which might come back from the client
     ExampleApp.controller('ExampleController', function ($scope, client, esFactory, $http, $q, $location) {
       var t = $location.search()['t'],
-          i = $location.search()['i'],
+          i = $location.search()['i'];
 
       $scope.error = null;
       $scope.options = {
